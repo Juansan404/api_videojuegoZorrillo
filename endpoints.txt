@@ -1,0 +1,20 @@
+La API tiene los siguientes endpoints disponibles: Base URL: http://localhost:8080/api/puntuaciones
+Health Check (Verificar que la API funciona):
+GET /api/puntuaciones/health
+Ejemplo: http://localhost:8080/api/puntuaciones/health
+Obtener Ranking (Top jugadores):
+GET /api/puntuaciones/ranking?limit=10
+Parámetro opcional: limit (default: 10)
+Ejemplo: http://localhost:8080/api/puntuaciones/ranking?limit=5
+Obtener partidas de un jugador:
+GET /api/puntuaciones/jugador/{nombre}
+Ejemplo: http://localhost:8080/api/puntuaciones/jugador/Player1
+Guardar nueva partida:
+POST /api/puntuaciones
+Body (JSON):
+{
+  "nombreJugador": "Player1",
+  "puntuacion": 1500,
+  "enemigosMatados": 25,
+  "tiempoJuego": 300
+}
