@@ -1,0 +1,157 @@
+===============================================================================
+                    API DE PUNTUACIONES - GUÍA RÁPIDA
+===============================================================================
+
+📌 URL BASE: http://localhost:8080/api/puntuaciones
+
+===============================================================================
+                           ENDPOINTS DISPONIBLES
+===============================================================================
+
+1. GUARDAR PARTIDA
+   ----------------
+   Método:  POST
+   URL:     /api/puntuaciones
+   Body:    JSON con datos de la partida
+
+   Ejemplo de petición:
+   {
+     "nombreJugador": "Player1",
+     "vidasGastadas": 2,
+     "gemasRecogidas": 15,
+     "enemigosEliminados": 8,
+     "danioRecibido": 30,
+     "tiempoPartida": 120.5,
+     "saltosRealizados": 45,
+     "disparosRealizados": 20,
+     "muertesTotales": 1
+   }
+
+   Respuesta exitosa:
+   {
+     "success": true,
+     "message": "Partida guardada exitosamente",
+     "data": { ... datos de la partida guardada con puntuación calculada ... }
+   }
+
+-------------------------------------------------------------------------------
+
+2. OBTENER RANKING
+   ----------------
+   Método:  GET
+   URL:     /api/puntuaciones/ranking
+   Params:  limit (opcional, por defecto 10)
+
+   Ejemplo: /api/puntuaciones/ranking?limit=20
+
+   Respuesta:
+   {
+     "success": true,
+     "message": "Ranking obtenido",
+     "data": [ ... lista de partidas ordenadas por puntuación ... ]
+   }
+
+-------------------------------------------------------------------------------
+
+3. OBTENER PARTIDAS DE UN JUGADOR
+   --------------------------------
+   Método:  GET
+   URL:     /api/puntuaciones/jugador/{nombre}
+
+   Ejemplo: /api/puntuaciones/jugador/Player1
+
+   Respuesta:
+   {
+     "success": true,
+     "message": "Partidas obtenidas",
+     "data": [ ... lista de partidas del jugador ... ]
+   }
+
+-------------------------------------------------------------------------------
+
+4. HEALTH CHECK (Verificar que la API funciona)
+   ---------------------------------------------
+   Método:  GET
+   URL:     /api/puntuaciones/health
+
+   Respuesta:
+   {
+     "success": true,
+     "message": "API funcionando correctamente",
+     "data": "OK"
+   }
+
+===============================================================================
+                    ESTRUCTURA DEL PROYECTO (Carpeta videojuego)
+===============================================================================
+
+📁 config/
+   └─ CorsConfig.java
+      → Configuración de CORS para permitir peticiones desde el videojuego
+      → Permite que Unity/Godot se conecte a la API sin problemas de seguridad
+
+📁 controller/
+   └─ PuntuacionController.java
+      → Controlador REST que expone los endpoints HTTP
+      → Recibe las peticiones del videojuego y devuelve respuestas JSON
+
+📁 dto/
+   └─ ApiResponse.java
+      → Formato estándar de respuesta de la API
+      → Incluye: success (boolean), message (String), data (cualquier tipo)
+
+📁 model/
+   ├─ Puntuacion.java
+   │  → Entidad principal que representa una partida
+   │  → Se guarda en la base de datos
+   │  → Calcula automáticamente la puntuación total
+   │
+   └─ EstadisticasJugador.java
+      → Modelo para estadísticas agregadas de jugadores (si se usa)
+
+📁 repository/
+   └─ PuntuacionRepository.java
+      → Interfaz para acceder a la base de datos
+      → Métodos para consultas personalizadas (ranking, búsquedas, etc.)
+
+📁 service/
+   ├─ PuntuacionService.java (Interfaz)
+   │  → Define los métodos de negocio disponibles
+   │
+   └─ PuntuacionServiceImpl.java (Implementación)
+      → Lógica de negocio de la aplicación
+      → Procesa las partidas antes de guardarlas
+      → Obtiene rankings y estadísticas
+
+📄 PuntuacionApiApplication.java
+   → Punto de entrada principal de la aplicación Spring Boot
+   → Inicia el servidor y configura la aplicación
+
+===============================================================================
+                         CÁLCULO DE PUNTUACIÓN
+===============================================================================
+
+La puntuación se calcula automáticamente con esta fórmula:
+
+  Puntos = (gemas × 100) + (enemigos × 50) - (vidas × 200) - (daño × 10)
+           + Bonus tiempo (máx 1000, decrece según tiempo)
+
+  ✓ Gemas recogidas:      +100 puntos cada una
+  ✓ Enemigos eliminados:  +50 puntos cada uno
+  ✗ Vidas gastadas:       -200 puntos cada una
+  ✗ Daño recibido:        -10 puntos por cada punto de daño
+  ⏱ Bonus tiempo:         Hasta 1000 puntos (menos tiempo = más bonus)
+
+  La puntuación mínima siempre es 0 (no puede ser negativa)
+
+===============================================================================
+                              NOTAS IMPORTANTES
+===============================================================================
+
+• La API se conecta a MySQL (base de datos "videojuego")
+• Los datos se guardan automáticamente con fecha y hora
+• La puntuación se calcula antes de guardar en la base de datos
+• Todas las respuestas usan el formato ApiResponse para consistencia
+• CORS está habilitado para desarrollo (permitir acceso desde cualquier origen)
+
+===============================================================================
